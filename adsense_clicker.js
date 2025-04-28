@@ -2,8 +2,7 @@ const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
 
-const TARGET_URL = 'https://your-target-site-with-adsense.com';
-
+const TARGET_URL = blogs-con-juli-vegettoson83s-projects.vercel.app
 (async () => {
     const browser = await puppeteer.launch({
         headless: false,
