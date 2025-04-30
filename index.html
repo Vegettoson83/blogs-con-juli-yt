@@ -6,8 +6,6 @@
 
 <div id="videos-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 20px;"></div>
 
-<button id="load-more" style="margin: 20px auto; display: block; padding: 10px 20px; font-size: 16px; cursor: pointer;">Load More</button>
-
 <script>
   const API_KEY = 'YOUR_YOUTUBE_API_KEY';
   const CHANNEL_ID = 'UCw_SZuRMPAFSxWFGr3IhAZQ';
@@ -15,10 +13,6 @@
 
   const videosContainer = document.getElementById('videos-container');
   const filterSelect = document.getElementById('video-filter');
-  const loadMoreBtn = document.getElementById('load-more');
-
-  let nextPageToken = '';
-  let currentFilter = 'all';
 
   function formatDuration(isoDuration) {
     const match = isoDuration.match(/PT(?:(\d+)M)?(?:(\d+)S)?/);
@@ -34,15 +28,10 @@
     return num + ' views';
   }
 
-  async function fetchChannelVideos(filterType = 'all', loadMore = false) {
+  async function fetchChannelVideos(filterType = 'all') {
     try {
-      let apiUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${UPLOADS_PLAYLIST_ID}&maxResults=12&key=${API_KEY}`;
-      if (nextPageToken) apiUrl += `&pageToken=${nextPageToken}`;
-
-      const response = await fetch(apiUrl);
+      const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${UPLOADS_PLAYLIST_ID}&maxResults=12&key=${API_KEY}`);
       const data = await response.json();
-      nextPageToken = data.nextPageToken || '';
-
       if (!data.items || data.items.length === 0) throw new Error('No videos available');
 
       const videoMap = {};
@@ -62,17 +51,12 @@
         return true;
       });
 
-      const html = filteredVideos.map(video => {
+      videosContainer.innerHTML = filteredVideos.map(video => {
         const snippet = videoMap[video.id];
-        const thumbUrl = snippet.thumbnails.high.url;
-        const videoId = video.id;
-
         return `
-          <div class="video-card" style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: #fff; position: relative;">
+          <div class="video-card" style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: #fff;">
             <div class="thumbnail" style="position: relative;">
-              <img src="${thumbUrl}" alt="Thumbnail" loading="lazy" style="width: 100%; display: block;">
-              <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}" frameborder="0"
-                allow="autoplay" style="width:100%; height:100%; position:absolute; top:0; left:0; display:none; border-radius: 8px;"></iframe>
+              <img src="${snippet.thumbnails.high.url}" alt="Thumbnail" loading="lazy" style="width: 100%; display: block;">
               <span class="video-duration" style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #fff; padding: 2px 6px; font-size: 12px; border-radius: 4px;">
                 ${formatDuration(video.contentDetails.duration)}
               </span>
@@ -85,44 +69,13 @@
           </div>
         `;
       }).join('');
-
-      if (!loadMore) {
-        videosContainer.innerHTML = html;
-      } else {
-        videosContainer.insertAdjacentHTML('beforeend', html);
-      }
-
-      attachHoverPreviews();
-
-      loadMoreBtn.style.display = nextPageToken ? 'block' : 'none';
     } catch (error) {
       console.error('Error fetching videos:', error);
       videosContainer.innerHTML = `<div class="error">Error fetching videos: ${error.message}</div>`;
     }
   }
 
-  function attachHoverPreviews() {
-    document.querySelectorAll('.video-card').forEach(card => {
-      const img = card.querySelector('img');
-      const iframe = card.querySelector('iframe');
-      card.addEventListener('mouseenter', () => {
-        img.style.display = 'none';
-        iframe.style.display = 'block';
-      });
-      card.addEventListener('mouseleave', () => {
-        iframe.style.display = 'none';
-        img.style.display = 'block';
-      });
-    });
-  }
-
-  filterSelect.addEventListener('change', () => {
-    currentFilter = filterSelect.value;
-    nextPageToken = ''; // reset page token on filter change
-    fetchChannelVideos(currentFilter);
-  });
-
-  loadMoreBtn.addEventListener('click', () => fetchChannelVideos(currentFilter, true));
+  filterSelect.addEventListener('change', () => fetchChannelVideos(filterSelect.value));
 
   fetchChannelVideos();
 </script>
