@@ -1,7 +1,7 @@
-<div id="player" style="width: 100%; height: 400px; margin-bottom: 20px;"></div> // --- Configuration ---
-const API_KEY = "AIzaSyDSEq_geih__vsiq6P66cZ80PI27p4-DVU"; // Replace with your API key
+<div id="player" style="width: 100%; height: 400px; margin-bottom: 20px;"></div>    // --- Configuration ---
+const API_KEY = "AIzaSyCT8bPyUWOnbUCs36rFucoPnAs3eX9xlUw"; // Your API key
 const CHANNEL_ID = "UCw_SZuRMPAFSxWFGr3IhAZQ"; // Your channel ID
-let player;
+let player; // YouTube player instance
 
 // --- Load YouTube IFrame API ---
 function loadYouTubeAPI() {
@@ -15,7 +15,6 @@ function onYouTubeIframeAPIReady() {
   player = new YT.Player("player", {
     height: "400",
     width: "100%",
-    videoId: "dQw4w9WgXcQ", // Default video ID (replace with your preferred one)
     playerVars: {
       autoplay: 1,
       controls: 1,
@@ -34,15 +33,72 @@ function onPlayerReady(event) {
 // --- Function to dynamically change video ---
 function changeVideo(videoId) {
   if (player && player.loadVideoById) {
-    player.loadVideoById(videoId); // Dynamically load the video by ID
+    player.loadVideoById(videoId); // Load the selected video
   } else {
     console.error("YouTube Player is not initialized yet.");
   }
 }
 
-// --- Example Usage ---
-// Call this function dynamically when you want to change the video
-// changeVideo("NEW_VIDEO_ID"); // Replace NEW_VIDEO_ID with the actual video ID
+// --- Fetch Functions ---
+async function fetchChannelVideos() {
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&maxResults=12&order=date&type=video&key=${API_KEY}`
+    );
+    const data = await response.json();
+
+    if (!data.items || data.items.length === 0) {
+      throw new Error("No hay videos disponibles");
+    }
+
+    const videoIds = data.items.map((item) => item.id.videoId).join(",");
+    const detailsResponse = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${videoIds}&key=${API_KEY}`
+    );
+    const detailsData = await detailsResponse.json();
+
+    const videosHTML = data.items
+      .map((item, idx) => {
+        const video = detailsData.items[idx];
+        return `
+          <div class="video-card" data-video-id="${item.id.videoId}">
+            <div class="thumbnail">
+              <img src="${item.snippet.thumbnails.high.url}" alt="Miniatura">
+              <span class="video-duration">${formatDuration(video.contentDetails.duration)}</span>
+            </div>
+            <div class="video-info">
+              <div class="video-title">${item.snippet.title}</div>
+              <div class="video-channel">${item.snippet.channelTitle}</div>
+              <div class="video-stats">${formatViewCount(
+                video.statistics.viewCount
+              )} vistas • ${formatPublishedDate(item.snippet.publishedAt)}</div>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+
+    videosContainer.innerHTML = videosHTML;
+
+    // Attach click events to video cards for autoplay
+    document.querySelectorAll(".video-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const videoId = card.getAttribute("data-video-id");
+        changeVideo(videoId); // Load selected video
+      });
+    });
+  } catch (error) {
+    console.error("Error fetching channel videos:", error);
+    videosContainer.innerHTML = `
+      <div id="empty-screen" class="empty-screen">
+        <div class="vine-text">No hay videos disponibles</div>
+        <div class="vine-decoration"></div>
+      </div>
+    `;
+  }
+}
 
 // --- Initialize ---
 loadYouTubeAPI();
+fetchChannelInfo();
+fetchChannelVideos();                                                                   
