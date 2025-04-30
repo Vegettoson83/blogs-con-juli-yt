@@ -1,104 +1,548 @@
-<div id="player" style="width: 100%; height: 400px; margin-bottom: 20px;"></div>    // --- Configuration ---
-const API_KEY = "AIzaSyCT8bPyUWOnbUCs36rFucoPnAs3eX9xlUw"; // Your API key
-const CHANNEL_ID = "UCw_SZuRMPAFSxWFGr3IhAZQ"; // Your channel ID
-let player; // YouTube player instance
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blogs Con Juli - YouTube Feed</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- Global Page Styles --- */
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f9f9f9;
+        color: #333;
+      }
 
-// --- Load YouTube IFrame API ---
-function loadYouTubeAPI() {
-  const script = document.createElement("script");
-  script.src = "https://www.youtube.com/iframe_api";
-  document.head.appendChild(script);
-}
+      .welcome-banner {
+        background: #eaeaea;
+        text-align: center;
+        padding: 20px;
+      }
 
-// --- This function is called by the IFrame API ---
-function onYouTubeIframeAPIReady() {
-  player = new YT.Player("player", {
-    height: "400",
-    width: "100%",
-    playerVars: {
-      autoplay: 1,
-      controls: 1,
-    },
-    events: {
-      onReady: onPlayerReady,
-    },
-  });
-}
+      .welcome-text {
+        font-family: "Dancing Script", cursive;
+        font-size: 2.5em;
+        margin: 0;
+      }
 
-// --- Triggered when the player is ready ---
-function onPlayerReady(event) {
-  console.log("YouTube Player is ready!");
-}
+      .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 20px;
+      }
 
-// --- Function to dynamically change video ---
-function changeVideo(videoId) {
-  if (player && player.loadVideoById) {
-    player.loadVideoById(videoId); // Load the selected video
-  } else {
-    console.error("YouTube Player is not initialized yet.");
-  }
-}
+      .channel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 30px;
+        padding: 10px;
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
 
-// --- Fetch Functions ---
-async function fetchChannelVideos() {
-  try {
-    const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&maxResults=12&order=date&type=video&key=${API_KEY}`
-    );
-    const data = await response.json();
+      .channel-avatar {
+        border-radius: 50%;
+        margin-right: 20px;
+      }
 
-    if (!data.items || data.items.length === 0) {
-      throw new Error("No hay videos disponibles");
-    }
+      .channel-info {
+        flex-grow: 1;
+      }
 
-    const videoIds = data.items.map((item) => item.id.videoId).join(",");
-    const detailsResponse = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${videoIds}&key=${API_KEY}`
-    );
-    const detailsData = await detailsResponse.json();
+      .channel-name {
+        font-size: 1.8em;
+        margin: 0;
+      }
 
-    const videosHTML = data.items
-      .map((item, idx) => {
-        const video = detailsData.items[idx];
-        return `
-          <div class="video-card" data-video-id="${item.id.videoId}">
-            <div class="thumbnail">
-              <img src="${item.snippet.thumbnails.high.url}" alt="Miniatura">
-              <span class="video-duration">${formatDuration(video.contentDetails.duration)}</span>
-            </div>
-            <div class="video-info">
-              <div class="video-title">${item.snippet.title}</div>
-              <div class="video-channel">${item.snippet.channelTitle}</div>
-              <div class="video-stats">${formatViewCount(
-                video.statistics.viewCount
-              )} vistas • ${formatPublishedDate(item.snippet.publishedAt)}</div>
-            </div>
-          </div>
-        `;
-      })
-      .join("");
+      .channel-stats {
+        color: #555;
+      }
 
-    videosContainer.innerHTML = videosHTML;
+      /* New player section */
+      .player-section {
+        display: none;
+        margin-bottom: 30px;
+      }
+      
+      .player-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        height: 0;
+        overflow: hidden;
+        background: #000;
+        border-radius: 8px;
+      }
+      
+      .player-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+      
+      .video-title-large {
+        font-size: 1.5em;
+        margin: 15px 0 5px;
+        font-weight: bold;
+      }
+      
+      .video-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      
+      .video-meta {
+        color: #777;
+      }
+      
+      .video-actions {
+        display: flex;
+        gap: 10px;
+      }
+      
+      .action-button {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: #f1f1f1;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      
+      .action-button:hover {
+        background: #e0e0e0;
+      }
 
-    // Attach click events to video cards for autoplay
-    document.querySelectorAll(".video-card").forEach((card) => {
-      card.addEventListener("click", () => {
-        const videoId = card.getAttribute("data-video-id");
-        changeVideo(videoId); // Load selected video
-      });
-    });
-  } catch (error) {
-    console.error("Error fetching channel videos:", error);
-    videosContainer.innerHTML = `
-      <div id="empty-screen" class="empty-screen">
-        <div class="vine-text">No hay videos disponibles</div>
-        <div class="vine-decoration"></div>
+      /* Video grid styles */
+      .video-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+      }
+
+      .video-card {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+        cursor: pointer;
+      }
+
+      .video-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .thumbnail {
+        position: relative;
+      }
+
+      .thumbnail img {
+        width: 100%;
+        display: block;
+      }
+
+      .video-duration {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.8em;
+      }
+
+      .video-info {
+        padding: 10px;
+      }
+
+      .video-title {
+        font-size: 1.1em;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      .video-channel,
+      .video-stats {
+        font-size: 0.9em;
+        color: #777;
+      }
+
+      /* --- Dynamic Color Changing Subscribe Button --- */
+      .subscribe-button {
+        padding: 12px 24px;
+        font-size: 18px;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+        background: linear-gradient(
+          270deg,
+          #ff8a00,
+          #e52e71,
+          #9b00ff,
+          #ff8a00
+        );
+        background-size: 800% 800%;
+        animation: colorShift 10s ease infinite;
+        transition: transform 0.3s ease;
+      }
+
+      .subscribe-button:hover {
+        transform: scale(1.05);
+      }
+
+      @keyframes colorShift {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      /* --- Empty Screen Placeholder --- */
+      .empty-screen {
+        position: relative;
+        background: #4a90e2; /* Blue background inspired by the cake color */
+        border-radius: 20px;
+        padding: 40px 20px;
+        text-align: center;
+        margin: 20px auto;
+        max-width: 600px;
+        box-shadow: inset 0 5px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .empty-screen .vine-text {
+        font-family: "Dancing Script", cursive;
+        font-size: 2.5em;
+        color: #e52e71; /* Vine red font */
+        margin: 0;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+      }
+
+      .empty-screen .vine-decoration {
+        margin-top: 20px;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none' viewBox='0 0 200 50'><path d='M0 25 C50 0, 150 50, 200 25' fill='none' stroke='%23e52e71' stroke-width='4'/></svg>")
+          no-repeat center;
+        background-size: cover;
+        height: 50px;
+      }
+      
+      /* Mobile responsiveness */
+      @media (max-width: 768px) {
+        .channel-header {
+          flex-direction: column;
+          text-align: center;
+        }
+        
+        .channel-avatar {
+          margin-right: 0;
+          margin-bottom: 10px;
+        }
+        
+        .subscribe-button {
+          margin-top: 15px;
+        }
+        
+        .video-details {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        
+        .video-actions {
+          margin-top: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="welcome-banner">
+      <h1 class="welcome-text">Bienvenidos a mi canal</h1>
+    </div>
+    <div class="container">
+      <div id="channel-container" class="channel-header">
+        <div class="loading">Cargando información del canal...</div>
       </div>
-    `;
-  }
-}
+      
+      <!-- New player section -->
+      <div id="player-section" class="player-section">
+        <div class="player-container">
+          <div id="youtube-player"></div>
+        </div>
+        <h2 id="playing-title" class="video-title-large"></h2>
+        <div class="video-details">
+          <div class="video-meta">
+            <span id="playing-views"></span> • <span id="playing-date"></span>
+          </div>
+          <div class="video-actions">
+            <button class="action-button" id="like-button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 10v12m8-16.7c.4-1 1.5-1.6 2.5-1.3 2.5.7 3.5 4.1 2.5 6.7L19 7h4c.6 0 1 .4 1 1 0 .1 0 .2-.1.3l-2.5 6c-.1.4-.5.7-1 .7H7"></path>
+              </svg>
+              Me gusta
+            </button>
+            <button class="action-button" id="share-button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 14a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+                <path d="m15 6-6 3m0 6 6 3"></path>
+              </svg>
+              Compartir
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="videos-container" class="video-grid">
+        <!-- The following serves as a placeholder for an empty video area -->
+        <div id="empty-screen" class="empty-screen" style="display: none;">
+          <div class="vine-text">No hay videos disponibles</div>
+          <div class="vine-decoration"></div>
+        </div>
+        <!-- When videos are fetched, they will replace the loading content -->
+        <div class="loading">Cargando videos...</div>
+      </div>
+    </div>
+    
+    <!-- Load YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    
+    <script>
+      // --- Configuration ---
+      const API_KEY = "AIzaSyDSEq_geih__vsiq6P66cZ80PI27p4-DVU"; // Using your new API key
+      const CHANNEL_ID = "UCw_SZuRMPAFSxWFGr3IhAZQ";
+      
+      const channelContainer = document.getElementById("channel-container");
+      const videosContainer = document.getElementById("videos-container");
+      const playerSection = document.getElementById("player-section");
+      const playingTitle = document.getElementById("playing-title");
+      const playingViews = document.getElementById("playing-views");
+      const playingDate = document.getElementById("playing-date");
+      
+      // YouTube Player global variable
+      let player;
+      
+      // Store video data for quick access
+      let videoDataMap = {};
+      
+      // --- YouTube Player Functions ---
+      function onYouTubeIframeAPIReady() {
+        // Player is initially created but not loaded with any video
+        player = new YT.Player('youtube-player', {
+          height: '100%',
+          width: '100%',
+          playerVars: {
+            'playsinline': 1,
+            'rel': 0,
+            'modestbranding': 1
+          },
+          events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+          }
+        });
+      }
+      
+      function onPlayerReady(event) {
+        console.log("YouTube player is ready");
+      }
+      
+      function onPlayerStateChange(event) {
+        // You can add custom behavior when video state changes
+        // For example, track when videos are finished, etc.
+      }
+      
+      function playVideo(videoId) {
+        if (player && player.loadVideoById) {
+          // Show the player section
+          playerSection.style.display = "block";
+          
+          // Load and play the video
+          player.loadVideoById(videoId);
+          
+          // Update the video info displayed
+          updatePlayingVideoInfo(videoId);
+          
+          // Scroll to player
+          playerSection.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          console.error("YouTube player not ready yet");
+        }
+      }
+      
+      function updatePlayingVideoInfo(videoId) {
+        const videoData = videoDataMap[videoId];
+        if (videoData) {
+          playingTitle.textContent = videoData.title;
+          playingViews.textContent = `${formatViewCount(videoData.viewCount)} vistas`;
+          playingDate.textContent = formatPublishedDate(videoData.publishedAt);
+        }
+      }
 
-// --- Initialize ---
-loadYouTubeAPI();
-fetchChannelInfo();
-fetchChannelVideos();                                                                   
+      // --- Utility Functions ---
+      function formatViewCount(count) {
+        if (count >= 1e6) return (count / 1e6).toFixed(1) + "M";
+        if (count >= 1e3) return (count / 1e3).toFixed(1) + "K";
+        return count.toString();
+      }
+
+      function formatDuration(duration) {
+        const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+        const hours = (match[1] || "0H").slice(0, -1);
+        const minutes = (match[2] || "0M").slice(0, -1);
+        const seconds = (match[3] || "0S").slice(0, -1);
+        return `${hours > 0 ? hours + ":" : ""}${minutes.padStart(2, "0")}:${seconds.padStart(2, "0")}`;
+      }
+
+      function formatPublishedDate(date) {
+        const now = new Date();
+        const published = new Date(date);
+        const diffDays = Math.floor((now - published) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) return "Hoy";
+        if (diffDays === 1) return "Ayer";
+        if (diffDays < 7) return `Hace ${diffDays} días`;
+        if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semanas`;
+        if (diffDays < 365) return `Hace ${Math.floor(diffDays / 30)} meses`;
+        return `Hace ${Math.floor(diffDays / 365)} años`;
+      }
+
+      // --- Fetch Functions ---
+      async function fetchChannelInfo() {
+        try {
+          const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${CHANNEL_ID}&key=${API_KEY}`
+          );
+          const data = await response.json();
+
+          if (!data.items || data.items.length === 0) throw new Error("Canal no encontrado");
+
+          const channel = data.items[0];
+          const html = `
+            <img class="channel-avatar" src="${channel.snippet.thumbnails.default.url}" alt="Avatar del Canal">
+            <div class="channel-info">
+              <h2 class="channel-name">${channel.snippet.title}</h2>
+              <div class="channel-stats">${formatViewCount(
+                channel.statistics.subscriberCount
+              )} suscriptores • ${channel.statistics.videoCount} videos</div>
+            </div>
+            <button class="subscribe-button" onclick="window.open('https://www.youtube.com/channel/${CHANNEL_ID}?sub_confirmation=1', '_blank')">Suscribirse</button>
+          `;
+          channelContainer.innerHTML = html;
+        } catch (error) {
+          console.error("Error fetching channel info:", error);
+          channelContainer.innerHTML = `<div class="error">${error.message}</div>`;
+        }
+      }
+
+      async function fetchChannelVideos() {
+        try {
+          const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&maxResults=12&order=date&type=video&key=${API_KEY}`
+          );
+          const data = await response.json();
+
+          if (!data.items || data.items.length === 0) {
+            throw new Error("No hay videos disponibles");
+          }
+
+          const videoIds = data.items.map((item) => item.id.videoId).join(",");
+          const detailsResponse = await fetch(
+            `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${videoIds}&key=${API_KEY}`
+          );
+          const detailsData = await detailsResponse.json();
+
+          const videosHTML = data.items
+            .map((item, idx) => {
+              const video = detailsData.items[idx];
+              const videoId = item.id.videoId;
+              
+              // Store video data for quick access later
+              videoDataMap[videoId] = {
+                title: item.snippet.title,
+                viewCount: video.statistics.viewCount,
+                publishedAt: item.snippet.publishedAt,
+                duration: video.contentDetails.duration,
+                thumbnail: item.snippet.thumbnails.high.url
+              };
+              
+              return `
+                <div class="video-card" onclick="playVideo('${videoId}')">
+                  <div class="thumbnail">
+                    <img src="${item.snippet.thumbnails.high.url}" alt="Miniatura">
+                    <span class="video-duration">${formatDuration(video.contentDetails.duration)}</span>
+                  </div>
+                  <div class="video-info">
+                    <div class="video-title">${item.snippet.title}</div>
+                    <div class="video-channel">${item.snippet.channelTitle}</div>
+                    <div class="video-stats">${formatViewCount(
+                      video.statistics.viewCount
+                    )} vistas • ${formatPublishedDate(item.snippet.publishedAt)}</div>
+                  </div>
+                </div>
+              `;
+            })
+            .join("");
+
+          videosContainer.innerHTML = videosHTML;
+        } catch (error) {
+          console.error("Error fetching channel videos:", error);
+          videosContainer.innerHTML = `
+            <div id="empty-screen" class="empty-screen">
+              <div class="vine-text">No hay videos disponibles</div>
+              <div class="vine-decoration"></div>
+            </div>
+          `;
+        }
+      }
+      
+      // Set up click listeners for like and share buttons
+      document.getElementById('like-button').addEventListener('click', function() {
+        alert('¡Gracias por tu like!');
+      });
+      
+      document.getElementById('share-button').addEventListener('click', function() {
+        if (player) {
+          const videoId = player.getVideoData().video_id;
+          const shareUrl = `https://youtu.be/${videoId}`;
+          
+          // Try to use Web Share API if available
+          if (navigator.share) {
+            navigator.share({
+              title: playingTitle.textContent,
+              url: shareUrl
+            }).catch(err => {
+              // Fallback if share fails
+              prompt('Comparte este enlace:', shareUrl);
+            });
+          } else {
+            // Fallback for browsers that don't support Web Share API
+            prompt('Comparte este enlace:', shareUrl);
+          }
+        }
+      });
+
+      // --- Initialize ---
+      fetchChannelInfo();
+      fetchChannelVideos();
+    </script>
+  </body>
+</html>                                                                  
