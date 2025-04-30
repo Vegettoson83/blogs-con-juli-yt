@@ -38,15 +38,26 @@
 
       const filteredVideos = detailsData.items.filter(video => {
         const duration = video.contentDetails.duration;
-        const isShort = duration.includes("PT") && !duration.includes("H") && parseInt(duration.match(/(\d+)M/)?.[1] || 0) < 1;
+
+        // Fixed shorts detection logic
+        const match = duration.match(/PT(?:(\d+)M)?(?:(\d+)S)?/);
+        const minutes = parseInt(match?.[1] || 0);
+        const seconds = parseInt(match?.[2] || 0);
+        const totalSeconds = minutes * 60 + seconds;
+        const isShort = totalSeconds > 0 && totalSeconds <= 60;
+
         return filterType === "shorts" ? isShort : filterType === "videos" ? !isShort : true;
-      });
+      }).map(video => ({
+        ...video,
+        snippet: videoMap[video.id]  // match video.id to snippet
+      }));
 
       videosContainer.innerHTML = filteredVideos.map(video => {
-        const snippet = videoMap[video.id];
+        const snippet = video.snippet;
+        const thumbnailUrl = (snippet.thumbnails.high || snippet.thumbnails.default).url;
         return `
           <div class="video-card">
-            <div class="thumbnail"><img src="${snippet.thumbnails.high.url}" alt="Thumbnail"></div>
+            <div class="thumbnail"><img src="${thumbnailUrl}" alt="Thumbnail"></div>
             <div class="video-info">
               <div class="video-title">${snippet.title}</div>
               <div class="video-stats">${video.statistics.viewCount} vistas</div>
@@ -65,15 +76,18 @@
       const data = await response.json();
       if (!data.items) throw new Error("No popular videos found");
 
-      popularVideosContainer.innerHTML = data.items.map(video => `
-        <div class="video-card">
-          <div class="thumbnail"><img src="${video.snippet.thumbnails.high.url}" alt="Thumbnail"></div>
-          <div class="video-info">
-            <div class="video-title">${video.snippet.title}</div>
-            <div class="video-stats">${video.statistics.viewCount} vistas</div>
+      popularVideosContainer.innerHTML = data.items.map(video => {
+        const thumbUrl = (video.snippet.thumbnails.high || video.snippet.thumbnails.default).url;
+        return `
+          <div class="video-card">
+            <div class="thumbnail"><img src="${thumbUrl}" alt="Thumbnail"></div>
+            <div class="video-info">
+              <div class="video-title">${video.snippet.title}</div>
+              <div class="video-stats">${video.statistics.viewCount} vistas</div>
+            </div>
           </div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
     } catch (error) {
       popularVideosContainer.innerHTML = `<div>Error cargando videos populares: ${error.message}</div>`;
     }
