@@ -3,7 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blogs Con Juli - YouTube Feed</title>
+
+    <!-- ========= SEO Meta Tags (for Indexing by Search Engines) ========= -->
+    <title>Blogs Con Juli - Videos Recientes de YouTube</title> <!-- More descriptive title -->
+    <meta name="description" content="Explora los últimos videos del canal de YouTube 'Blogs Con Juli'. Mira tutoriales, vlogs y más contenido directamente aquí." />
+    <!-- You could add keywords too, though less important now: <meta name="keywords" content="Blogs Con Juli, youtube, videos, vlogs, tutoriales"> -->
+    <!-- ================================================================== -->
+
     <link
       href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap"
       rel="stylesheet"
@@ -49,6 +55,8 @@
       .channel-avatar {
         border-radius: 50%;
         margin-right: 20px;
+        width: 80px; /* Added specific size */
+        height: 80px; /* Added specific size */
       }
 
       .channel-info {
@@ -100,15 +108,19 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 15px;
+        flex-wrap: wrap; /* Allow wrapping on small screens */
+        gap: 10px; /* Add gap for wrapped items */
       }
 
       .video-meta {
         color: #777;
+        flex-shrink: 0; /* Prevent shrinking */
       }
 
       .video-actions {
         display: flex;
         gap: 10px;
+        flex-shrink: 0; /* Prevent shrinking */
       }
 
       .action-button {
@@ -121,6 +133,12 @@
         border-radius: 20px;
         cursor: pointer;
         transition: background 0.2s;
+        font-size: 0.9em; /* Slightly smaller text */
+      }
+
+      .action-button svg {
+        width: 18px; /* Consistent icon size */
+        height: 18px;
       }
 
       .action-button:hover {
@@ -139,20 +157,32 @@
         border: 1px solid #ddd;
         border-radius: 8px;
         overflow: hidden;
-        transition: transform 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
         cursor: pointer;
+        display: flex; /* Added for flex layout */
+        flex-direction: column; /* Stack thumbnail and info vertically */
       }
 
       .video-card:hover {
         transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       }
 
       .thumbnail {
         position: relative;
+        width: 100%;
+        padding-bottom: 56.25%; /* 16:9 aspect ratio for thumbnail area */
+        height: 0;
+        overflow: hidden; /* Ensure image stays within bounds */
       }
 
       .thumbnail img {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
+        height: 100%;
+        object-fit: cover; /* Cover the area without distortion */
         display: block;
       }
 
@@ -168,25 +198,42 @@
       }
 
       .video-info {
-        padding: 10px;
+        padding: 12px;
+        flex-grow: 1; /* Allow info section to grow */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; /* Push stats to bottom */
       }
 
       .video-title {
-        font-size: 1.1em;
-        margin-bottom: 5px;
-        font-weight: bold;
+        font-size: 1.05em; /* Adjusted size */
+        margin-bottom: 6px;
+        font-weight: 600; /* Slightly bolder */
+        line-height: 1.3;
+         /* Limit title lines */
+        max-height: 2.6em; /* Approx 2 lines */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
       }
 
       .video-channel,
       .video-stats {
-        font-size: 0.9em;
-        color: #777;
+        font-size: 0.85em; /* Adjusted size */
+        color: #555; /* Darker grey */
+        line-height: 1.4;
+      }
+      .video-channel {
+          margin-bottom: 4px;
       }
 
+
       /* --- Dynamic Color Changing Subscribe Button --- */
-      .subscribe-button {
-        padding: 12px 24px;
-        font-size: 18px;
+      .subscribe-button { /* Now targeting the <a> tag */
+        padding: 10px 20px; /* Adjusted padding */
+        font-size: 16px; /* Adjusted font size */
         color: #fff;
         border: none;
         cursor: pointer;
@@ -200,11 +247,16 @@
         );
         background-size: 800% 800%;
         animation: colorShift 10s ease infinite;
-        transition: transform 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-decoration: none; /* Remove underline from link */
+        display: inline-block; /* Needed for padding/margin */
+        text-align: center;
+        flex-shrink: 0; /* Prevent shrinking in flex layout */
       }
 
       .subscribe-button:hover {
         transform: scale(1.05);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       }
 
       @keyframes colorShift {
@@ -222,40 +274,51 @@
       /* --- Empty Screen Placeholder --- */
       .empty-screen {
         position: relative;
-        background: #4a90e2; /* Blue background inspired by the cake color */
-        border-radius: 20px;
+        background: #eef7ff; /* Lighter blue */
+        border: 1px dashed #a0cfff; /* Dashed border */
+        color: #334d6e; /* Darker text */
+        border-radius: 10px;
         padding: 40px 20px;
         text-align: center;
         margin: 20px auto;
         max-width: 600px;
-        box-shadow: inset 0 5px 20px rgba(0, 0, 0, 0.2);
-        /* Make sure the empty screen takes up grid space if needed */
+        box-shadow: none; /* Removed inner shadow */
+        /* Make sure it takes up grid space */
         grid-column: 1 / -1; /* Span across all columns if grid is empty */
       }
 
       .empty-screen .vine-text {
         font-family: "Dancing Script", cursive;
-        font-size: 2.5em;
-        color: #e52e71; /* Vine red font */
+        font-size: 2.2em; /* Slightly smaller */
+        color: #0056b3; /* Blue color */
         margin: 0;
-        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        text-shadow: none; /* Removed text shadow */
       }
 
       .empty-screen .vine-decoration {
         margin-top: 20px;
-        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none' viewBox='0 0 200 50'><path d='M0 25 C50 0, 150 50, 200 25' fill='none' stroke='%23e52e71' stroke-width='4'/></svg>")
-          no-repeat center;
-        background-size: cover;
-        height: 50px;
+         /* Simplified decoration or remove if not needed */
+         height: 5px;
+         width: 80px;
+         background: #a0cfff;
+         margin-left: auto;
+         margin-right: auto;
+         border-radius: 3px;
       }
 
        /* Loading and Error states */
       .loading, .error {
           text-align: center;
           padding: 40px;
-          font-size: 1.2em;
+          font-size: 1.1em; /* Adjusted size */
           color: #555;
           grid-column: 1 / -1; /* Span across all columns */
+      }
+      .error {
+          color: #d9534f; /* Error color */
+          background-color: #f2dede;
+          border: 1px solid #ebccd1;
+          border-radius: 4px;
       }
 
       /* Mobile responsiveness */
@@ -263,28 +326,34 @@
         .channel-header {
           flex-direction: column;
           text-align: center;
+          gap: 15px; /* Add gap for column layout */
         }
 
         .channel-avatar {
           margin-right: 0;
-          margin-bottom: 10px;
+          margin-bottom: 0; /* Removed bottom margin */
         }
 
         .subscribe-button {
-          margin-top: 15px;
+          margin-top: 0; /* Removed top margin */
+          width: 80%; /* Make button wider on mobile */
+          max-width: 250px;
         }
 
         .video-details {
           flex-direction: column;
-          align-items: flex-start;
+          align-items: flex-start; /* Align items left */
+          gap: 8px;
         }
 
         .video-actions {
-          margin-top: 10px;
+          margin-top: 5px; /* Reduced margin */
+          width: 100%; /* Make actions take full width */
+          justify-content: flex-start; /* Align buttons left */
         }
 
-        .video-grid {
-             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjust for smaller screens */
+         .video-grid {
+             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Slightly larger minmax */
         }
       }
       @media (max-width: 480px) {
@@ -297,14 +366,30 @@
           .channel-name {
               font-size: 1.5em;
           }
-          .video-title-large {
+           .video-title-large {
               font-size: 1.3em;
           }
+           .channel-avatar {
+               width: 60px;
+               height: 60px;
+           }
+           .subscribe-button {
+               padding: 8px 16px;
+               font-size: 15px;
+           }
+           .action-button {
+               padding: 6px 10px;
+               font-size: 0.85em;
+           }
+            .action-button svg {
+                width: 16px;
+                height: 16px;
+            }
       }
 
     </style>
 
-    <!-- Google tag (gtag.js) - ADDED HERE -->
+    <!-- Google tag (gtag.js) - For Visit Data Indexing by Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-L2STL9VKKR"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -322,10 +407,11 @@
     </div>
     <div class="container">
       <div id="channel-container" class="channel-header">
+        <!-- Channel Info Loaded Here -->
         <div class="loading">Cargando información del canal...</div>
       </div>
 
-      <!-- New player section -->
+      <!-- Player section -->
       <div id="player-section" class="player-section">
         <div class="player-container">
           <div id="youtube-player"></div>
@@ -337,31 +423,32 @@
           </div>
           <div class="video-actions">
             <button class="action-button" id="like-button" title="Me gusta (simulado)">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"> <!-- Adjusted fill/stroke -->
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1">
                 <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"></path>
               </svg>
-              Me gusta
+              <span>Me gusta</span> <!-- Text in span for better control -->
             </button>
             <button class="action-button" id="share-button" title="Compartir video">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <!-- Adjusted SVG attributes -->
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="18" cy="5" r="3"></circle>
                 <circle cx="6" cy="12" r="3"></circle>
                 <circle cx="18" cy="19" r="3"></circle>
                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
                 <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
               </svg>
-              Compartir
+              <span>Compartir</span> <!-- Text in span -->
             </button>
           </div>
         </div>
       </div>
 
+      <!-- Video Grid -->
       <div id="videos-container" class="video-grid">
         <!-- Placeholder while loading -->
         <div class="loading">Cargando videos...</div>
         <!-- This empty screen placeholder will be shown by JS if no videos are found -->
         <div id="empty-screen" class="empty-screen" style="display: none;">
-          <div class="vine-text">No hay videos disponibles</div>
+          <div class="vine-text">No hay videos disponibles por el momento.</div>
           <div class="vine-decoration"></div>
         </div>
       </div>
@@ -370,11 +457,13 @@
     <!-- Load YouTube IFrame API -->
     <script src="https://www.youtube.com/iframe_api"></script>
 
+    <!-- Main JavaScript -->
     <script>
       // --- Configuration ---
-      const API_KEY = "AIzaSyDSEq_geih__vsiq6P66cZ80PI27p4-DVU"; // Using your new API key
-      const CHANNEL_ID = "UCw_SZuRMPAFSxWFGr3IhAZQ";
+      const API_KEY = "AIzaSyDSEq_geih__vsiq6P66cZ80PI27p4-DVU"; // Your API key
+      const CHANNEL_ID = "UCw_SZuRMPAFSxWFGr3IhAZQ"; // Your Channel ID
 
+      // --- DOM Elements ---
       const channelContainer = document.getElementById("channel-container");
       const videosContainer = document.getElementById("videos-container");
       const playerSection = document.getElementById("player-section");
@@ -382,72 +471,103 @@
       const playingViews = document.getElementById("playing-views");
       const playingDate = document.getElementById("playing-date");
       const emptyScreen = document.getElementById("empty-screen");
+      const likeButton = document.getElementById('like-button');
+      const shareButton = document.getElementById('share-button');
 
-      // YouTube Player global variable
-      let player;
+      // --- Global Variables ---
+      let player; // YouTube Player instance
+      let videoDataMap = {}; // Cache for video details
+      let currentVideoId = null; // Track the currently playing video ID
 
-      // Store video data for quick access
-      let videoDataMap = {};
-      let currentVideoId = null; // Keep track of the currently playing video
-
-      // --- YouTube Player Functions ---
+      // --- YouTube Player API Functions ---
       function onYouTubeIframeAPIReady() {
-        // Player is initially created but not loaded with any video
+        console.log("YouTube IFrame API Ready");
         player = new YT.Player('youtube-player', {
           height: '100%',
           width: '100%',
           playerVars: {
-            'playsinline': 1, // Important for mobile playback
-            'rel': 0,         // Don't show related videos from other channels
-            'modestbranding': 1 // Less YouTube branding
+            'playsinline': 1,
+            'rel': 0,
+            'modestbranding': 1,
+            'autoplay': 0 // Ensure autoplay is off initially
           },
           events: {
             'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
+            'onStateChange': onPlayerStateChange,
+            'onError': onPlayerError
           }
         });
       }
 
       function onPlayerReady(event) {
-        console.log("YouTube player is ready");
-        // Player is ready, but we don't load a video until one is clicked
+        console.log("YouTube player is ready (onPlayerReady event)");
+        // The player is ready, actions can be performed on it.
       }
 
       function onPlayerStateChange(event) {
-        // Example: Track video plays in Google Analytics (if gtag is defined)
-        if (event.data == YT.PlayerState.PLAYING && typeof gtag === 'function') {
+         console.log("Player state changed:", event.data);
+        // Send 'video_play' event to Google Analytics when video starts playing
+        if (event.data === YT.PlayerState.PLAYING && typeof gtag === 'function') {
              const videoData = player.getVideoData();
-             if (videoData && videoData.title) {
+             if (videoData?.video_id && videoData.title) {
+                 console.log(`GA Event: video_play - ${videoData.title}`);
                  gtag('event', 'video_play', {
                     'event_category': 'YouTube Player',
-                    'event_label': videoData.title,
+                    'event_label': videoData.title.substring(0, 100), // Limit label length
                     'video_id': videoData.video_id
                  });
              }
         }
-        // Add other state change handling if needed (e.g., video ended)
+         // Example: Track video completion (State ENDED = 0)
+         if (event.data === YT.PlayerState.ENDED && typeof gtag === 'function') {
+             const videoData = player.getVideoData();
+             if (videoData?.video_id && videoData.title) {
+                 console.log(`GA Event: video_complete - ${videoData.title}`);
+                 gtag('event', 'video_complete', {
+                     'event_category': 'YouTube Player',
+                     'event_label': videoData.title.substring(0, 100),
+                     'video_id': videoData.video_id
+                 });
+             }
+         }
       }
 
+      function onPlayerError(event) {
+          console.error("YouTube Player Error:", event.data);
+          // You could display a message to the user or log this error
+           playingTitle.textContent = "Error al cargar el video.";
+           playingViews.textContent = "";
+           playingDate.textContent = "";
+           // Send error event to GA
+           if (typeof gtag === 'function') {
+               gtag('event', 'player_error', {
+                   'event_category': 'YouTube Player',
+                   'event_label': `Error code: ${event.data}`,
+                   'video_id': currentVideoId || 'unknown'
+               });
+           }
+      }
+
+      // --- Core Application Functions ---
       function playVideo(videoId) {
         if (!player || typeof player.loadVideoById !== 'function') {
-            console.error("YouTube player is not ready or invalid.");
-            // Maybe try to initialize it again or show an error
-            alert("El reproductor de video no está listo. Intenta de nuevo en unos momentos.");
+            console.error("Player not ready or invalid.");
+            onYouTubeIframeAPIReady(); // Attempt to re-initialize if player is lost
+            // Show user-friendly message
+             alert("El reproductor de video no está listo. Por favor, espera un momento y vuelve a intentarlo.");
             return;
         }
 
-        // Show the player section
+        console.log(`Attempting to play video: ${videoId}`);
         playerSection.style.display = "block";
+        player.loadVideoById(videoId); // Autoplay is handled by playerVars or might need event.target.playVideo() in onReady/onStateChange if issues persist
+        player.playVideo(); // Explicitly call playVideo after loading
 
-        // Load and play the video
-        player.loadVideoById(videoId);
-        currentVideoId = videoId; // Store the ID of the video being played
-
-        // Update the video info displayed below the player
+        currentVideoId = videoId;
         updatePlayingVideoInfo(videoId);
 
-        // Scroll to player smoothly
-        playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); // Scroll to the top of the player
+        // Smooth scroll to the player
+        playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
       function updatePlayingVideoInfo(videoId) {
@@ -456,253 +576,315 @@
           playingTitle.textContent = videoData.title || "Video sin título";
           playingViews.textContent = `${formatViewCount(videoData.viewCount)} vistas`;
           playingDate.textContent = formatPublishedDate(videoData.publishedAt);
+          console.log(`Updated info for video: ${videoId}`);
         } else {
-          // Fallback if data not found (shouldn't normally happen)
+           console.warn(`Video data not found in map for ID: ${videoId}`);
            playingTitle.textContent = "Cargando información...";
            playingViews.textContent = "";
            playingDate.textContent = "";
+           // Attempt to fetch details again if missing? Could be complex.
         }
       }
 
-      // --- Utility Functions ---
-      function formatViewCount(count) {
-        const num = Number(count); // Ensure it's a number
-        if (isNaN(num)) return 'N/A';
-        if (num >= 1e6) return (num / 1e6).toFixed(1).replace('.0','') + "M";
-        if (num >= 1e3) return (num / 1e3).toFixed(1).replace('.0','') + "K";
-        return num.toString();
+       // --- Fetch Data Functions ---
+      async function fetchData(url, type) {
+          try {
+              console.log(`Fetching ${type}: ${url}`);
+              const response = await fetch(url);
+              if (!response.ok) {
+                  let errorMsg = `HTTP error! status: ${response.status}`;
+                  try {
+                      const errorData = await response.json();
+                      errorMsg = `Error ${response.status}: ${errorData.error?.message || 'Failed to fetch data'}`;
+                  } catch (jsonError) {
+                      // If response is not JSON, use status text
+                      errorMsg = `HTTP error! status: ${response.status} ${response.statusText}`;
+                  }
+                  throw new Error(errorMsg);
+              }
+              const data = await response.json();
+              console.log(`Successfully fetched ${type}`);
+              return data;
+          } catch (error) {
+              console.error(`Error fetching ${type}:`, error);
+              throw error; // Re-throw the error to be caught by the caller
+          }
       }
 
-      function formatDuration(duration) {
-         if (!duration) return "0:00"; // Handle case where duration might be missing
-        const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-        if (!match) return "0:00"; // Handle parsing errors
-
-        // Parse the results, providing defaults of 0
-        const hours = parseInt(match[1] || "0");
-        const minutes = parseInt(match[2] || "0");
-        const seconds = parseInt(match[3] || "0");
-
-        // Format the time string
-        let timeString = "";
-        if (hours > 0) {
-            timeString += `${hours}:${minutes.toString().padStart(2, "0")}:`;
-        } else {
-            timeString += `${minutes}:`;
-        }
-        timeString += seconds.toString().padStart(2, "0");
-
-        return timeString;
-      }
-
-      function formatPublishedDate(dateString) {
-         try {
-             const published = new Date(dateString);
-             const now = new Date();
-             const diffTime = now - published; // Difference in milliseconds
-
-             const diffSeconds = Math.floor(diffTime / 1000);
-             const diffMinutes = Math.floor(diffSeconds / 60);
-             const diffHours = Math.floor(diffMinutes / 60);
-             const diffDays = Math.floor(diffHours / 24);
-             const diffWeeks = Math.floor(diffDays / 7);
-             const diffMonths = Math.floor(diffDays / 30.44); // Average month length
-             const diffYears = Math.floor(diffDays / 365.25); // Account for leap years
-
-             if (diffYears > 0) return `Hace ${diffYears} año${diffYears > 1 ? 's' : ''}`;
-             if (diffMonths > 0) return `Hace ${diffMonths} mes${diffMonths > 1 ? 'es' : ''}`;
-             if (diffWeeks > 0) return `Hace ${diffWeeks} semana${diffWeeks > 1 ? 's' : ''}`;
-             if (diffDays > 0) return `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
-             if (diffHours > 0) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
-             if (diffMinutes > 0) return `Hace ${diffMinutes} minuto${diffMinutes > 1 ? 's' : ''}`;
-             return "Hace unos segundos";
-
-         } catch (error) {
-             console.error("Error formatting date:", dateString, error);
-             return "Fecha desconocida"; // Fallback for invalid dates
-         }
-      }
-
-      // --- Fetch Functions ---
       async function fetchChannelInfo() {
         const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${CHANNEL_ID}&key=${API_KEY}`;
         try {
-          const response = await fetch(url);
-          if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(`Error ${response.status}: ${errorData.error?.message || 'Failed to fetch channel data'}`);
-          }
-          const data = await response.json();
-
-          if (!data.items || data.items.length === 0) throw new Error("Canal no encontrado");
+          const data = await fetchData(url, 'Channel Info');
+          if (!data.items || data.items.length === 0) throw new Error("Canal no encontrado en la respuesta de la API.");
 
           const channel = data.items[0];
-          const snippet = channel.snippet;
-          const stats = channel.statistics;
+          const snippet = channel.snippet || {};
+          const stats = channel.statistics || {};
+
+          // Default values for robustness
+          const avatarUrl = snippet.thumbnails?.default?.url || 'placeholder-avatar.png'; // Provide a placeholder image path if needed
+          const channelTitle = snippet.title || 'Nombre del Canal';
+          const subscriberCount = stats.subscriberCount || 0;
+          const videoCount = stats.videoCount || 0;
 
           const html = `
-            <img class="channel-avatar" src="${snippet?.thumbnails?.default?.url || ''}" alt="Avatar del Canal">
+            <img class="channel-avatar" src="${avatarUrl}" alt="Avatar de ${channelTitle}">
             <div class="channel-info">
-              <h2 class="channel-name">${snippet?.title || 'Nombre del Canal'}</h2>
-              <div class="channel-stats">${formatViewCount(stats?.subscriberCount || 0)} suscriptores • ${stats?.videoCount || 0} videos</div>
+              <h2 class="channel-name">${channelTitle}</h2>
+              <div class="channel-stats">${formatViewCount(subscriberCount)} suscriptores • ${videoCount} videos</div>
             </div>
-            <a href="https://www.youtube.com/channel/${CHANNEL_ID}?sub_confirmation=1" target="_blank" rel="noopener noreferrer" class="subscribe-button">Suscribirse</a>
-          `; // Used an <a> tag for better practice on the subscribe button
+            <a href="https://www.youtube.com/channel/${CHANNEL_ID}?sub_confirmation=1" target="_blank" rel="noopener noreferrer" class="subscribe-button" title="Suscribirse a ${channelTitle} en YouTube">Suscribirse</a>
+          `;
           channelContainer.innerHTML = html;
         } catch (error) {
-          console.error("Error fetching channel info:", error);
-          channelContainer.innerHTML = `<div class="error">Error al cargar información del canal: ${error.message}</div>`;
+          channelContainer.innerHTML = `<div class="error">Error al cargar info del canal: ${error.message}</div>`;
         }
       }
 
       async function fetchChannelVideos() {
           const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&maxResults=12&order=date&type=video&key=${API_KEY}`;
           try {
-              const response = await fetch(searchUrl);
-              if (!response.ok) {
-                  const errorData = await response.json();
-                  throw new Error(`Error ${response.status}: ${errorData.error?.message || 'Failed to fetch video list'}`);
-              }
-              const data = await response.json();
+              const searchData = await fetchData(searchUrl, 'Video List');
 
-              if (!data.items || data.items.length === 0) {
-                  // No videos found - show the empty screen placeholder
+              if (!searchData.items || searchData.items.length === 0) {
+                  console.log("No videos found for this channel.");
                   videosContainer.innerHTML = ''; // Clear loading message
-                  emptyScreen.style.display = 'block'; // Show the empty screen div
-                  return; // Stop execution here
+                  emptyScreen.style.display = 'block';
+                  return;
               }
 
-              // Hide empty screen if it was previously shown
-              emptyScreen.style.display = 'none';
+              emptyScreen.style.display = 'none'; // Hide empty screen if videos are found
 
-              const videoIds = data.items.map((item) => item.id.videoId).join(",");
+              const videoIds = searchData.items.map(item => item.id?.videoId).filter(id => id).join(","); // Filter out potential undefined IDs
+              if (!videoIds) {
+                   throw new Error("No valid video IDs found in search results.");
+              }
+
               const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${videoIds}&key=${API_KEY}`;
+              const detailsData = await fetchData(detailsUrl, 'Video Details');
 
-              const detailsResponse = await fetch(detailsUrl);
-              if (!detailsResponse.ok) {
-                   const errorData = await detailsResponse.json();
-                   throw new Error(`Error ${detailsResponse.status}: ${errorData.error?.message || 'Failed to fetch video details'}`);
-              }
-              const detailsData = await detailsResponse.json();
-
-              // Create a map of video details for easier lookup
+              // Create a map of details for efficient lookup
               const detailsMap = {};
-              detailsData.items.forEach(item => {
-                  detailsMap[item.id] = {
-                      duration: item.contentDetails?.duration,
-                      viewCount: item.statistics?.viewCount
-                  };
+              detailsData.items?.forEach(item => {
+                  if (item.id) {
+                     detailsMap[item.id] = {
+                         duration: item.contentDetails?.duration,
+                         viewCount: item.statistics?.viewCount
+                     };
+                  }
               });
 
-              // Build HTML for video cards
-              const videosHTML = data.items
-                  .map((item) => {
-                      const videoId = item.id.videoId;
-                      const snippet = item.snippet;
-                      const details = detailsMap[videoId] || {}; // Get details or empty object
+              // Clear previous video data cache
+              videoDataMap = {};
 
-                      // Store comprehensive video data for the player info section
+              // Build video card HTML
+              const videosHTML = searchData.items
+                  .map((item) => {
+                      const videoId = item.id?.videoId;
+                      if (!videoId) return ''; // Skip if no videoId
+
+                      const snippet = item.snippet || {};
+                      const details = detailsMap[videoId] || {};
+
+                      // Store comprehensive data in the map
                       videoDataMap[videoId] = {
-                          title: snippet?.title || "Video sin título",
+                          title: snippet.title || "Video sin título",
                           viewCount: details.viewCount || 0,
-                          publishedAt: snippet?.publishedAt,
-                          duration: details.duration, // Store duration from details
-                          thumbnail: snippet?.thumbnails?.high?.url || snippet?.thumbnails?.medium?.url || '', // Fallback thumbnails
-                          channelTitle: snippet?.channelTitle || ''
+                          publishedAt: snippet.publishedAt || new Date().toISOString(), // Fallback date
+                          duration: details.duration,
+                          thumbnail: snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url || 'placeholder-thumb.png', // Thumbnail fallbacks
+                          channelTitle: snippet.channelTitle || 'Canal Desconocido'
                       };
 
+                      // Use cached data for display
+                      const displayData = videoDataMap[videoId];
+
                       return `
-                          <div class="video-card" onclick="playVideo('${videoId}')" title="Reproducir: ${snippet?.title || ''}">
+                          <div class="video-card" onclick="playVideo('${videoId}')" title="Reproducir: ${displayData.title}">
                               <div class="thumbnail">
-                                  <img src="${videoDataMap[videoId].thumbnail}" alt="Miniatura de ${snippet?.title || 'video'}">
-                                  <span class="video-duration">${formatDuration(details.duration)}</span>
+                                  <img src="${displayData.thumbnail}" alt="Miniatura de ${displayData.title}" loading="lazy">  <!-- Lazy loading -->
+                                  <span class="video-duration">${formatDuration(displayData.duration)}</span>
                               </div>
                               <div class="video-info">
-                                  <div class="video-title">${snippet?.title || 'Video sin título'}</div>
-                                  <div class="video-channel">${snippet?.channelTitle || ''}</div>
-                                  <div class="video-stats">${formatViewCount(details.viewCount || 0)} vistas • ${formatPublishedDate(snippet?.publishedAt)}</div>
+                                 <div> <!-- Wrapper for title and channel -->
+                                     <div class="video-title">${displayData.title}</div>
+                                     <div class="video-channel">${displayData.channelTitle}</div>
+                                 </div>
+                                  <div class="video-stats">${formatViewCount(displayData.viewCount)} vistas • ${formatPublishedDate(displayData.publishedAt)}</div>
                               </div>
                           </div>
                       `;
                   })
                   .join("");
 
-              videosContainer.innerHTML = videosHTML; // Replace loading message with video grid
+              videosContainer.innerHTML = videosHTML || '<div class="loading">No se pudieron mostrar los videos.</div>'; // Fallback if map fails
 
           } catch (error) {
-              console.error("Error fetching channel videos:", error);
-              // Display error within the videos container
-              videosContainer.innerHTML = `<div class="error">Error al cargar videos: ${error.message}</div>`;
-               emptyScreen.style.display = 'none'; // Ensure empty screen is hidden on error
+              console.error("Full error object fetching videos:", error); // Log the full error object
+              videosContainer.innerHTML = `<div class="error">Error al cargar videos: ${error.message}. Revisa la consola para más detalles.</div>`;
+              emptyScreen.style.display = 'none';
           }
       }
 
-      // --- Action Button Listeners ---
-      document.getElementById('like-button').addEventListener('click', function() {
-        // Note: This is a cosmetic like button, it doesn't actually interact with YouTube's like system.
-        alert('¡Gracias por indicar que te gusta! (Esta es una demostración)');
-         // Optional: Change button appearance slightly
-         this.style.color = '#e52e71'; // Example color change
-         setTimeout(() => { this.style.color = 'currentColor'; }, 1000); // Revert after 1 second
 
-         // Optional: Track click in Google Analytics
-          if (currentVideoId && typeof gtag === 'function') {
-              gtag('event', 'like_button_click', {
+      // --- Utility Functions ---
+      function formatViewCount(count) {
+        const num = Number(count);
+        if (isNaN(num) || num < 0) return '0'; // Handle invalid input
+        if (num >= 1e6) return (num / 1e6).toFixed(1).replace('.0','') + "M";
+        if (num >= 1e3) return (num / 1e3).toFixed(1).replace('.0','') + "K";
+        return num.toString();
+      }
+
+      function formatDuration(isoDuration) {
+         if (!isoDuration || typeof isoDuration !== 'string') return "0:00";
+         // Regular expression to parse ISO 8601 duration (handles PT#H#M#S format)
+         const regex = /P(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?/;
+         const matches = isoDuration.match(regex);
+
+         if (!matches) return "0:00"; // Return default if parsing fails
+
+         const hours = matches[1] ? parseInt(matches[1], 10) : 0;
+         const minutes = matches[2] ? parseInt(matches[2], 10) : 0;
+         const seconds = matches[3] ? Math.round(parseFloat(matches[3])) : 0; // Round seconds
+
+         // Format the time string
+         let timeString = "";
+         if (hours > 0) {
+             timeString += `${hours}:${minutes.toString().padStart(2, '0')}:`;
+         } else {
+             timeString += `${minutes}:`;
+         }
+         timeString += seconds.toString().padStart(2, '0');
+
+         return timeString;
+      }
+
+     function formatPublishedDate(dateString) {
+         try {
+             if (!dateString) throw new Error("Invalid date string provided");
+             const published = new Date(dateString);
+             // Check if the date is valid
+             if (isNaN(published.getTime())) throw new Error("Parsed date is invalid");
+
+             const now = new Date();
+             const diffTime = now - published;
+
+             // Handle future dates (though unlikely for published videos)
+             if (diffTime < 0) return "Próximamente";
+
+             const diffSeconds = Math.max(0, Math.floor(diffTime / 1000));
+             const diffMinutes = Math.floor(diffSeconds / 60);
+             const diffHours = Math.floor(diffMinutes / 60);
+             const diffDays = Math.floor(diffHours / 24);
+             const diffWeeks = Math.floor(diffDays / 7);
+             const diffMonths = Math.floor(diffDays / 30.44);
+             const diffYears = Math.floor(diffDays / 365.25);
+
+             if (diffYears >= 1) return `Hace ${diffYears} año${diffYears > 1 ? 's' : ''}`;
+             if (diffMonths >= 1) return `Hace ${diffMonths} mes${diffMonths > 1 ? 'es' : ''}`;
+             if (diffWeeks >= 1) return `Hace ${diffWeeks} semana${diffWeeks > 1 ? 's' : ''}`;
+             if (diffDays >= 1) return `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
+             if (diffHours >= 1) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+             if (diffMinutes >= 1) return `Hace ${diffMinutes} minuto${diffMinutes > 1 ? 's' : ''}`;
+             return "Hace unos segundos";
+
+         } catch (error) {
+             console.error("Error formatting date:", dateString, error);
+             return "Fecha desconocida";
+         }
+      }
+
+      // --- Event Listeners for Action Buttons ---
+      likeButton.addEventListener('click', function() {
+        alert('¡Gracias por tu Me Gusta! (Función simulada)');
+        this.classList.add('liked'); // Example: add a class for visual feedback
+        setTimeout(() => { this.classList.remove('liked'); }, 1500); // Remove class after a while
+
+        // Track click in Google Analytics
+        if (currentVideoId && typeof gtag === 'function') {
+             const videoTitle = videoDataMap[currentVideoId]?.title || 'Unknown Video';
+             console.log(`GA Event: like_button_click - ${videoTitle}`);
+             gtag('event', 'like_button_click', {
                 'event_category': 'User Interaction',
-                'event_label': videoDataMap[currentVideoId]?.title || 'Unknown Video',
+                'event_label': videoTitle.substring(0, 100),
                 'video_id': currentVideoId
-              });
-          }
+             });
+         }
       });
 
-      document.getElementById('share-button').addEventListener('click', function() {
+      shareButton.addEventListener('click', function() {
           if (!currentVideoId) {
-              alert("Primero reproduce un video para poder compartirlo.");
+              alert("Por favor, reproduce un video antes de intentar compartirlo.");
               return;
           }
 
           const videoData = videoDataMap[currentVideoId];
           const shareUrl = `https://youtu.be/${currentVideoId}`;
           const shareTitle = videoData?.title || 'Mira este video';
+          const shareText = `¡Echa un vistazo a este video de ${videoData?.channelTitle || 'Blogs Con Juli'}: "${shareTitle}"!`;
 
-          // Track share attempt in Google Analytics
-           if (typeof gtag === 'function') {
-               gtag('event', 'share_button_click', {
+          // Track share attempt in GA
+          if (typeof gtag === 'function') {
+              console.log(`GA Event: share_button_click - ${shareTitle}`);
+              gtag('event', 'share_button_click', {
                  'event_category': 'User Interaction',
-                 'event_label': shareTitle,
+                 'event_label': shareTitle.substring(0, 100),
                  'video_id': currentVideoId
-               });
-           }
+              });
+          }
 
-          // Try to use Web Share API first (modern browsers, especially mobile)
+          // Use Web Share API if available
           if (navigator.share) {
               navigator.share({
                   title: shareTitle,
-                  text: `Mira "${shareTitle}" de Blogs Con Juli!`, // Optional text
+                  text: shareText,
                   url: shareUrl
               }).then(() => {
-                  console.log('Shared successfully');
-                  // Optional: Track successful share via API
-                  if (typeof gtag === 'function') {
-                      gtag('event', 'share_success_api', {'event_category': 'User Interaction','video_id': currentVideoId});
-                  }
+                  console.log('Shared successfully via Web Share API');
+                  // Optional: Track successful share
+                   if (typeof gtag === 'function') {
+                       gtag('event', 'share_success_api', {'event_category': 'User Interaction','video_id': currentVideoId});
+                   }
               }).catch((error) => {
-                  console.error('Error sharing:', error);
-                  // Fallback if share fails or is cancelled (though often cancel doesn't throw error)
-                  // Don't show prompt if error is just cancellation by user
-                  if (!error.message.toLowerCase().includes('abort')) {
-                     prompt('Copia este enlace para compartir:', shareUrl);
+                  // Don't show prompt if user cancelled (AbortError)
+                  if (error.name !== 'AbortError') {
+                      console.error('Error sharing:', error);
+                      prompt('No se pudo usar la función de compartir. Copia este enlace:', shareUrl);
+                       if (typeof gtag === 'function') {
+                           gtag('event', 'share_fail_api', {'event_category': 'User Interaction','video_id': currentVideoId, 'error': error.message});
+                       }
+                  } else {
+                      console.log('Share cancelled by user.');
+                       if (typeof gtag === 'function') {
+                           gtag('event', 'share_cancel_api', {'event_category': 'User Interaction','video_id': currentVideoId});
+                       }
                   }
               });
           } else {
-              // Fallback for browsers that don't support Web Share API
+              // Fallback for browsers without Web Share API
+              console.log('Web Share API not supported, using prompt.');
               prompt('Copia este enlace para compartir:', shareUrl);
+               if (typeof gtag === 'function') {
+                   gtag('event', 'share_fallback_prompt', {'event_category': 'User Interaction','video_id': currentVideoId});
+               }
           }
       });
 
-      // --- Initialize ---
-      fetchChannelInfo();
-      fetchChannelVideos();
+      // --- Initial Load ---
+      function initializeApp() {
+          console.log("Initializing App");
+          fetchChannelInfo(); // Fetch channel details
+          fetchChannelVideos(); // Fetch video list
+          // Player is initialized via onYouTubeIframeAPIReady callback
+      }
+
+      // Make sure initialization happens after the DOM is fully loaded
+      if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initializeApp);
+      } else {
+          initializeApp(); // DOMContentLoaded has already fired
+      }
 
     </script>
   </body>
