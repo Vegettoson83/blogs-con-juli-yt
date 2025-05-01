@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
 
-const TARGET_URL = https://blogs-con-juli-vegettoson83s-projects.vercel.app/
+const TARGET_URL = www.blogs-con-juli-yt.com
 (async () => {
     const browser = await puppeteer.launch({
         headless: false,
