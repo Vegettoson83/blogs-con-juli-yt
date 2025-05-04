@@ -1,0 +1,15 @@
+User-agent: *
+Disallow: /search
+Disallow: /sdch
+Disallow: /groups
+Disallow: /images
+Disallow: /catalogs
+Disallow: /news
+Disallow: /nwshp
+Disallow: /setnewsprefs?
+Disallow: /index.html?
+Disallow: /?
+Allow: /?hl=
+
+User-agent: AdsBot-Google
+Disallow: 
