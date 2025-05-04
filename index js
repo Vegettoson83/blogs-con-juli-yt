@@ -1,0 +1,244 @@
+// Blog Indexing and SEO Enhancement Tool
+// This tool helps automate querying and improving indexing for www.blogs-con-juli-yt.com
+
+const axios = require('axios');
+const cheerio = require('cheerio');
+const fs = require('fs');
+const path = require('path');
+const { SitemapStream, streamToPromise } = require('sitemap');
+const { Readable } = require('stream');
+
+class BlogIndexer {
+  constructor(baseUrl) {
+    this.baseUrl = baseUrl;
+    this.visitedUrls = new Set();
+    this.sitemapUrls = [];
+    this.blogPosts = [];
+  }
+
+  // Main function to run the indexing process
+  async run() {
+    console.log(`Starting to index ${this.baseUrl}...`);
+    
+    try {
+      // Crawl the site to discover all pages
+      await this.crawlSite(this.baseUrl);
+      
+      // Generate and save sitemap
+      await this.generateSitemap();
+      
+      // Generate SEO optimization suggestions
+      const seoSuggestions = this.generateSEOSuggestions();
+      this.saveSEOReport(seoSuggestions);
+      
+      // Submit sitemap to search engines (ping them)
+      await this.submitToSearchEngines();
+      
+      console.log('Indexing completed successfully!');
+      return {
+        crawledUrls: Array.from(this.visitedUrls),
+        blogPosts: this.blogPosts,
+        sitemapPath: './sitemap.xml',
+        seoReportPath: './seo_report.json'
+      };
+    } catch (error) {
+      console.error('Error during indexing:', error);
+      throw error;
+    }
+  }
+
+  // Crawl the website to discover all pages
+  async crawlSite(startUrl, depth = 0, maxDepth = 3) {
+    // Prevent infinite recursion or going too deep
+    if (depth > maxDepth || this.visitedUrls.has(startUrl)) {
+      return;
+    }
+    
+    this.visitedUrls.add(startUrl);
+    console.log(`Crawling: ${startUrl}`);
+    
+    try {
+      const response = await axios.get(startUrl);
+      const $ = cheerio.load(response.data);
+      
+      // Extract page data for blog posts
+      if (startUrl.includes('/blog/') || startUrl.includes('/post/') || depth === 0) {
+        const pageData = this.extractPageData($, startUrl);
+        if (pageData.title && pageData.content) {
+          this.blogPosts.push(pageData);
+          this.sitemapUrls.push({
+            url: startUrl,
+            changefreq: 'weekly',
+            priority: startUrl === this.baseUrl ? 1.0 : 0.8
+          });
+        }
+      }
+      
+      // Find all links on the page and crawl them
+      const links = $('a')
+        .map((i, link) => {
+          const href = $(link).attr('href');
+          if (!href) return null;
+          
+          // Resolve relative URLs
+          let fullUrl;
+          if (href.startsWith('http')) {
+            fullUrl = href;
+          } else if (href.startsWith('/')) {
+            const urlObj = new URL(this.baseUrl);
+            fullUrl = `${urlObj.protocol}//${urlObj.host}${href}`;
+          } else {
+            fullUrl = new URL(href, startUrl).href;
+          }
+          
+          // Only return URLs from the same domain
+          return fullUrl.includes(new URL(this.baseUrl).host) ? fullUrl : null;
+        })
+        .get()
+        .filter(Boolean);
+      
+      // Recursively crawl all discovered URLs
+      for (const link of links) {
+        await this.crawlSite(link, depth + 1, maxDepth);
+      }
+    } catch (error) {
+      console.error(`Error crawling ${startUrl}:`, error.message);
+    }
+  }
+
+  // Extract important data from a page
+  extractPageData($, url) {
+    return {
+      url,
+      title: $('title').text().trim() || $('h1').first().text().trim(),
+      description: $('meta[name="description"]').attr('content') || '',
+      content: $('article, .content, .post-content, main').text().trim() || $('body').text().trim(),
+      keywords: $('meta[name="keywords"]').attr('content') || '',
+      lastModified: new Date().toISOString(),
+      headings: $('h1, h2, h3').map((i, el) => $(el).text().trim()).get(),
+    };
+  }
+
+  // Generate XML sitemap
+  async generateSitemap() {
+    // Add the homepage if not already included
+    if (!this.sitemapUrls.find(item => item.url === this.baseUrl)) {
+      this.sitemapUrls.push({
+        url: this.baseUrl,
+        changefreq: 'daily',
+        priority: 1.0
+      });
+    }
+    
+    // Create sitemap stream
+    const stream = new SitemapStream({ hostname: this.baseUrl });
+    const data = await streamToPromise(
+      Readable.from(this.sitemapUrls).pipe(stream)
+    );
+    
+    fs.writeFileSync('./sitemap.xml', data.toString());
+    console.log('Sitemap generated successfully!');
+  }
+
+  // Generate SEO suggestions based on the crawled content
+  generateSEOSuggestions() {
+    const suggestions = [];
+    
+    for (const post of this.blogPosts) {
+      const postSuggestions = {
+        url: post.url,
+        recommendations: []
+      };
+      
+      // Check title length (ideally 50-60 characters)
+      if (!post.title) {
+        postSuggestions.recommendations.push('Missing page title. Add a descriptive title.');
+      } else if (post.title.length < 30) {
+        postSuggestions.recommendations.push('Title is too short. Aim for 50-60 characters.');
+      } else if (post.title.length > 70) {
+        postSuggestions.recommendations.push('Title is too long. Keep it under 60 characters.');
+      }
+      
+      // Check meta description
+      if (!post.description) {
+        postSuggestions.recommendations.push('Missing meta description. Add a compelling description of 150-160 characters.');
+      } else if (post.description.length < 120) {
+        postSuggestions.recommendations.push('Meta description is too short. Aim for 150-160 characters.');
+      } else if (post.description.length > 170) {
+        postSuggestions.recommendations.push('Meta description is too long. Keep it under 160 characters.');
+      }
+      
+      // Check content length
+      if (post.content.length < 300) {
+        postSuggestions.recommendations.push('Content is too short. Consider adding more valuable content (at least 300 words).');
+      }
+      
+      // Check heading structure
+      if (post.headings.length < 2) {
+        postSuggestions.recommendations.push('Too few headings. Use more headings to structure your content.');
+      }
+      
+      suggestions.push(postSuggestions);
+    }
+    
+    return suggestions;
+  }
+
+  // Save SEO report to a file
+  saveSEOReport(suggestions) {
+    const report = {
+      generatedAt: new Date().toISOString(),
+      websiteUrl: this.baseUrl,
+      totalPagesAnalyzed: this.blogPosts.length,
+      suggestions: suggestions,
+      generalRecommendations: [
+        'Ensure all images have descriptive alt text',
+        'Improve page loading speed by optimizing images and scripts',
+        'Create more internal links between related content',
+        'Regularly update your content to keep it fresh',
+        'Add social sharing buttons to increase visibility'
+      ]
+    };
+    
+    fs.writeFileSync('./seo_report.json', JSON.stringify(report, null, 2));
+    console.log('SEO report generated successfully!');
+  }
+
+  // Submit sitemap to search engines
+  async submitToSearchEngines() {
+    const sitemapUrl = `${this.baseUrl}/sitemap.xml`;
+    const searchEngines = [
+      `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`,
+      `https://www.bing.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`
+    ];
+    
+    for (const pingUrl of searchEngines) {
+      try {
+        console.log(`Pinging search engine: ${pingUrl}`);
+        await axios.get(pingUrl);
+      } catch (error) {
+        console.error(`Error pinging ${pingUrl}:`, error.message);
+      }
+    }
+  }
+}
+
+// Usage example
+async function main() {
+  try {
+    const indexer = new BlogIndexer('https://www.blogs-con-juli-yt.com');
+    const results = await indexer.run();
+    
+    console.log('\n===== RESULTS =====');
+    console.log(`Total URLs crawled: ${results.crawledUrls.length}`);
+    console.log(`Total blog posts found: ${results.blogPosts.length}`);
+    console.log(`Sitemap saved to: ${results.sitemapPath}`);
+    console.log(`SEO Report saved to: ${results.seoReportPath}`);
+    console.log('\nYou can now upload the sitemap.xml file to your website root directory!');
+  } catch (error) {
+    console.error('Failed to complete indexing:', error);
+  }
+}
+
+// Run the tool
+main();
