@@ -1,15 +1,10 @@
 User-agent: *
-Disallow: /search
-Disallow: /sdch
-Disallow: /groups
-Disallow: /images
-Disallow: /catalogs
-Disallow: /news
-Disallow: /nwshp
-Disallow: /setnewsprefs?
-Disallow: /index.html?
-Disallow: /?
-Allow: /?hl=
+Allow: /
 
 User-agent: AdsBot-Google
-Disallow: 
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+Sitemap: https://vegettoson83.github.io/blogs-con-juli-yt/sitemap.xml
